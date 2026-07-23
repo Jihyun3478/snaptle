@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: snaptle
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:snaptle}
+    username: ${DB_USERNAME:snaptle}
+    password: ${DB_PASSWORD:snaptle}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID:kakao-client-id-not-configured}
+            client-secret: ${KAKAO_CLIENT_SECRET:kakao-client-secret-not-configured}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
+            client-authentication-method: client_secret_post
+            scope:
+              - profile_nickname
+              - account_email
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+server:
+  port: ${SERVER_PORT:8080}
+
+snaptle:
+  jwt:
+    secret: ${JWT_SECRET:CHANGE_ME_LOCAL_DEV_ONLY_MIN_32_BYTES_SECRET_KEY}
+    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:3600000}
+  frontend:
+    oauth-redirect-uri: ${FRONTEND_OAUTH_REDIRECT_URI:http://localhost:3000/oauth/callback}
+  external-api:
+    gemini-api-key: ${GEMINI_API_KEY:}
+    exchange-rate-api-key: ${EXCHANGE_RATE_API_KEY:}
+
+logging:
+  level:
+    com.snaptle: DEBUG
