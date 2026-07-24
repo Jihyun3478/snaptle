@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "settlements")
+@Table(
+        name = "settlements",
+        uniqueConstraints = @UniqueConstraint(name = "uk_settlements_trip_id", columnNames = "trip_id")
+)
 public class Settlement extends BaseTimeEntity {
 
     @Id

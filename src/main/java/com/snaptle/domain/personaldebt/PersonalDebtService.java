@@ -2,6 +2,7 @@ package com.snaptle.domain.personaldebt;
 
 import com.snaptle.domain.personaldebt.dto.CreatePersonalDebtRequest;
 import com.snaptle.domain.personaldebt.dto.PersonalDebtResponse;
+import com.snaptle.domain.trip.Trip;
 import com.snaptle.domain.trip.TripService;
 import com.snaptle.global.exception.ErrorCode;
 import com.snaptle.global.exception.SnaptleException;
@@ -23,8 +24,9 @@ public class PersonalDebtService {
 
     @Transactional
     public PersonalDebtResponse createPersonalDebt(Long userId, Long tripId, CreatePersonalDebtRequest request) {
-        tripService.getTripOrThrow(tripId);
+        Trip trip = tripService.getTripOrThrow(tripId);
         tripService.requireMember(tripId, userId);
+        tripService.requireNotEnded(trip);
 
         if (request.creditorId().equals(request.debtorId())) {
             throw new SnaptleException(ErrorCode.SAME_CREDITOR_AND_DEBTOR);

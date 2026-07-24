@@ -13,8 +13,11 @@ import com.snaptle.global.exception.ErrorCode;
 import com.snaptle.global.exception.SnaptleException;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +52,12 @@ public class SettlementService {
 
         trip.end();
 
-        Settlement settlement = settlementRepository.save(Settlement.create(tripId));
+        Settlement settlement;
+        try {
+            settlement = settlementRepository.saveAndFlush(Settlement.create(tripId));
+        } catch (DataIntegrityViolationException e) {
+            throw new SnaptleException(ErrorCode.TRIP_ALREADY_ENDED);
+        }
         List<MinimumTransferCalculator.Transfer> calculatedTransfers =
                 MinimumTransferCalculator.calculate(balances.netBalances());
         List<SettlementTransfer> transfers = calculatedTransfers.stream()
@@ -92,9 +100,16 @@ public class SettlementService {
             totalOwedByUser.merge(participant.getUserId(), participant.getShareAmount(), BigDecimal::add);
         }
 
+        Set<Long> allUserIds = new HashSet<>(totalPaidByUser.keySet());
+        allUserIds.addAll(totalOwedByUser.keySet());
+
         Map<Long, BigDecimal> netBalances = new HashMap<>();
-        for (Long memberId : totalPaidByUser.keySet()) {
-            netBalances.put(memberId, totalPaidByUser.get(memberId).subtract(totalOwedByUser.get(memberId)));
+        for (Long userId : allUserIds) {
+            BigDecimal paid = totalPaidByUser.getOrDefault(userId, BigDecimal.ZERO);
+            BigDecimal owed = totalOwedByUser.getOrDefault(userId, BigDecimal.ZERO);
+            totalPaidByUser.putIfAbsent(userId, paid);
+            totalOwedByUser.putIfAbsent(userId, owed);
+            netBalances.put(userId, paid.subtract(owed));
         }
 
         return new TripBalances(totalPaidByUser, totalOwedByUser, netBalances);
