@@ -9,6 +9,10 @@ import com.snaptle.global.exception.ErrorCode;
 import com.snaptle.global.exception.SnaptleException;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +37,10 @@ public class TripService {
 
     @Transactional
     public TripResponse createTrip(Long userId, CreateTripRequest request) {
+        if (request.endDate().isBefore(request.startDate())) {
+            throw new SnaptleException(ErrorCode.INVALID_TRIP_PERIOD);
+        }
+
         Trip trip = tripRepository.save(Trip.create(
                 request.name(), request.startDate(), request.endDate(), request.baseCurrency(),
                 generateUniqueInviteCode()
@@ -51,15 +59,19 @@ public class TripService {
             throw new SnaptleException(ErrorCode.ALREADY_JOINED_TRIP);
         }
 
-        tripMemberRepository.save(TripMember.of(trip.getId(), userId));
+        try {
+            tripMemberRepository.saveAndFlush(TripMember.of(trip.getId(), userId));
+        } catch (DataIntegrityViolationException e) {
+            throw new SnaptleException(ErrorCode.ALREADY_JOINED_TRIP);
+        }
         return toResponse(trip);
     }
 
     public List<TripResponse> getMyTrips(Long userId) {
-        return tripMemberRepository.findAllByUserId(userId).stream()
+        List<Long> tripIds = tripMemberRepository.findAllByUserId(userId).stream()
                 .map(TripMember::getTripId)
-                .map(tripId -> tripRepository.findById(tripId)
-                        .orElseThrow(() -> new SnaptleException(ErrorCode.TRIP_NOT_FOUND)))
+                .toList();
+        return tripRepository.findAllById(tripIds).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -82,10 +94,19 @@ public class TripService {
     }
 
     private TripResponse toResponse(Trip trip) {
-        List<TripMemberResponse> members = tripMemberRepository.findAllByTripId(trip.getId()).stream()
-                .map(member -> userRepository.findById(member.getUserId())
-                        .orElseThrow(() -> new SnaptleException(ErrorCode.USER_NOT_FOUND)))
-                .map(TripMemberResponse::from)
+        List<TripMember> tripMembers = tripMemberRepository.findAllByTripId(trip.getId());
+        List<Long> userIds = tripMembers.stream().map(TripMember::getUserId).toList();
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        List<TripMemberResponse> members = tripMembers.stream()
+                .map(member -> {
+                    User user = usersById.get(member.getUserId());
+                    if (user == null) {
+                        throw new SnaptleException(ErrorCode.USER_NOT_FOUND);
+                    }
+                    return TripMemberResponse.from(user);
+                })
                 .toList();
         return TripResponse.of(trip, members);
     }

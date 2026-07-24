@@ -12,7 +12,8 @@ public enum ErrorCode {
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "여행을 찾을 수 없습니다."),
     INVALID_INVITE_CODE(HttpStatus.NOT_FOUND, "유효하지 않은 초대 코드입니다."),
     ALREADY_JOINED_TRIP(HttpStatus.CONFLICT, "이미 참여 중인 여행입니다."),
-    NOT_TRIP_MEMBER(HttpStatus.FORBIDDEN, "해당 여행의 멤버가 아닙니다.");
+    NOT_TRIP_MEMBER(HttpStatus.FORBIDDEN, "해당 여행의 멤버가 아닙니다."),
+    INVALID_TRIP_PERIOD(HttpStatus.BAD_REQUEST, "여행 종료일은 시작일보다 빠를 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;
