@@ -25,7 +25,9 @@ public enum ErrorCode {
     PARTICIPANT_NOT_TRIP_MEMBER(HttpStatus.BAD_REQUEST, "참여자는 여행 멤버여야 합니다."),
     INVALID_PARTICIPANT_SPLIT(HttpStatus.BAD_REQUEST, "분담 금액은 모두 입력하거나 모두 비워야 하며, 합계가 지출 금액과 일치해야 합니다."),
     SAME_CREDITOR_AND_DEBTOR(HttpStatus.BAD_REQUEST, "채권자와 채무자는 같을 수 없습니다."),
-    PERSONAL_DEBT_NOT_FOUND(HttpStatus.NOT_FOUND, "개인 간 채무 내역을 찾을 수 없습니다.");
+    PERSONAL_DEBT_NOT_FOUND(HttpStatus.NOT_FOUND, "개인 간 채무 내역을 찾을 수 없습니다."),
+    TRIP_ALREADY_ENDED(HttpStatus.CONFLICT, "이미 종료된 여행입니다."),
+    SETTLEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "정산 결과를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;
