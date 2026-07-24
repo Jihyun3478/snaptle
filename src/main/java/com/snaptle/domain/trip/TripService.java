@@ -82,15 +82,19 @@ public class TripService {
         return toResponse(trip);
     }
 
-    Trip getTripOrThrow(Long tripId) {
+    public Trip getTripOrThrow(Long tripId) {
         return tripRepository.findById(tripId)
                 .orElseThrow(() -> new SnaptleException(ErrorCode.TRIP_NOT_FOUND));
     }
 
-    void requireMember(Long tripId, Long userId) {
-        if (!tripMemberRepository.existsByTripIdAndUserId(tripId, userId)) {
+    public void requireMember(Long tripId, Long userId) {
+        if (!isMember(tripId, userId)) {
             throw new SnaptleException(ErrorCode.NOT_TRIP_MEMBER);
         }
+    }
+
+    public boolean isMember(Long tripId, Long userId) {
+        return tripMemberRepository.existsByTripIdAndUserId(tripId, userId);
     }
 
     private TripResponse toResponse(Trip trip) {

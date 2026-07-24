@@ -39,3 +39,6 @@ out/
 ### Env ###
 .env
 .DS_Store
+
+### Uploads ###
+/uploads/

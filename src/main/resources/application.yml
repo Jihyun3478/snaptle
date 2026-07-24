@@ -17,6 +17,11 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   security:
     oauth2:
       client:
@@ -49,7 +54,11 @@ snaptle:
     oauth-redirect-uri: ${FRONTEND_OAUTH_REDIRECT_URI:http://localhost:3000/oauth/callback}
   external-api:
     gemini-api-key: ${GEMINI_API_KEY:}
+    gemini-model: ${GEMINI_MODEL:gemini-2.0-flash}
     exchange-rate-api-key: ${EXCHANGE_RATE_API_KEY:}
+  file:
+    upload-dir: ${FILE_UPLOAD_DIR:./uploads/receipts}
+    public-base-url: ${FILE_PUBLIC_BASE_URL:http://localhost:8080/uploads}
 
 logging:
   level:
