@@ -121,9 +121,11 @@ public class ExpenseService {
             if (!userIds.add(participant.userId())) {
                 throw new SnaptleException(ErrorCode.DUPLICATE_PARTICIPANT);
             }
-            if (!tripService.isMember(tripId, participant.userId())) {
-                throw new SnaptleException(ErrorCode.PARTICIPANT_NOT_TRIP_MEMBER);
-            }
+        }
+
+        Set<Long> memberUserIds = tripService.memberUserIdsAmong(tripId, userIds);
+        if (!memberUserIds.containsAll(userIds)) {
+            throw new SnaptleException(ErrorCode.PARTICIPANT_NOT_TRIP_MEMBER);
         }
 
         long specifiedCount = participantRequests.stream().filter(p -> p.shareAmount() != null).count();
@@ -138,16 +140,20 @@ public class ExpenseService {
 
     private List<ExpenseParticipant> buildCustomSplit(Long expenseId, BigDecimal convertedAmount,
                                                         List<ParticipantShareRequest> participantRequests) {
-        BigDecimal sum = participantRequests.stream()
-                .map(ParticipantShareRequest::shareAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (sum.setScale(2, RoundingMode.HALF_UP).compareTo(convertedAmount) != 0) {
+        List<BigDecimal> roundedShares = participantRequests.stream()
+                .map(p -> p.shareAmount().setScale(2, RoundingMode.HALF_UP))
+                .toList();
+
+        BigDecimal sum = roundedShares.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (sum.compareTo(convertedAmount) != 0 || roundedShares.stream().anyMatch(s -> s.compareTo(BigDecimal.ZERO) <= 0)) {
             throw new SnaptleException(ErrorCode.INVALID_PARTICIPANT_SPLIT);
         }
 
-        return participantRequests.stream()
-                .map(p -> ExpenseParticipant.of(expenseId, p.userId(), p.shareAmount().setScale(2, RoundingMode.HALF_UP)))
-                .toList();
+        List<ExpenseParticipant> participants = new java.util.ArrayList<>(participantRequests.size());
+        for (int i = 0; i < participantRequests.size(); i++) {
+            participants.add(ExpenseParticipant.of(expenseId, participantRequests.get(i).userId(), roundedShares.get(i)));
+        }
+        return participants;
     }
 
     private List<ExpenseParticipant> buildEqualSplit(Long expenseId, BigDecimal convertedAmount,

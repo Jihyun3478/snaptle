@@ -23,6 +23,7 @@ public class PersonalDebtService {
 
     @Transactional
     public PersonalDebtResponse createPersonalDebt(Long userId, Long tripId, CreatePersonalDebtRequest request) {
+        tripService.getTripOrThrow(tripId);
         tripService.requireMember(tripId, userId);
 
         if (request.creditorId().equals(request.debtorId())) {
@@ -42,10 +43,12 @@ public class PersonalDebtService {
     }
 
     public List<PersonalDebtResponse> getPersonalDebts(Long userId, Long tripId) {
+        tripService.getTripOrThrow(tripId);
         tripService.requireMember(tripId, userId);
 
-        return personalDebtRepository.findAllByTripIdOrderByCreatedAtDesc(tripId).stream()
-                .filter(debt -> debt.getCreditorId().equals(userId) || debt.getDebtorId().equals(userId))
+        return personalDebtRepository
+                .findAllByTripIdAndCreditorIdOrTripIdAndDebtorIdOrderByCreatedAtDesc(tripId, userId, tripId, userId)
+                .stream()
                 .map(PersonalDebtResponse::from)
                 .toList();
     }

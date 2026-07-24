@@ -8,8 +8,10 @@ import com.snaptle.domain.user.UserRepository;
 import com.snaptle.global.exception.ErrorCode;
 import com.snaptle.global.exception.SnaptleException;
 import java.security.SecureRandom;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -95,6 +97,12 @@ public class TripService {
 
     public boolean isMember(Long tripId, Long userId) {
         return tripMemberRepository.existsByTripIdAndUserId(tripId, userId);
+    }
+
+    public Set<Long> memberUserIdsAmong(Long tripId, Collection<Long> userIds) {
+        return tripMemberRepository.findAllByTripIdAndUserIdIn(tripId, List.copyOf(userIds)).stream()
+                .map(TripMember::getUserId)
+                .collect(Collectors.toSet());
     }
 
     private TripResponse toResponse(Trip trip) {
