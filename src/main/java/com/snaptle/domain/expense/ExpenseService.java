@@ -70,6 +70,7 @@ public class ExpenseService {
     public ExpenseResponse createExpense(Long userId, Long tripId, CreateExpenseRequest request) {
         Trip trip = tripService.getTripOrThrow(tripId);
         tripService.requireMember(tripId, userId);
+        tripService.requireNotEnded(trip);
 
         if (!tripService.isMember(tripId, request.payerId())) {
             throw new SnaptleException(ErrorCode.PAYER_NOT_TRIP_MEMBER);

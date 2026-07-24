@@ -56,6 +56,7 @@ public class TripService {
     public TripResponse joinTrip(Long userId, String inviteCode) {
         Trip trip = tripRepository.findByInviteCode(inviteCode)
                 .orElseThrow(() -> new SnaptleException(ErrorCode.INVALID_INVITE_CODE));
+        requireNotEnded(trip);
 
         if (tripMemberRepository.existsByTripIdAndUserId(trip.getId(), userId)) {
             throw new SnaptleException(ErrorCode.ALREADY_JOINED_TRIP);
@@ -99,10 +100,22 @@ public class TripService {
         return tripMemberRepository.existsByTripIdAndUserId(tripId, userId);
     }
 
+    public void requireNotEnded(Trip trip) {
+        if (trip.isEnded()) {
+            throw new SnaptleException(ErrorCode.TRIP_ALREADY_ENDED);
+        }
+    }
+
     public Set<Long> memberUserIdsAmong(Long tripId, Collection<Long> userIds) {
         return tripMemberRepository.findAllByTripIdAndUserIdIn(tripId, List.copyOf(userIds)).stream()
                 .map(TripMember::getUserId)
                 .collect(Collectors.toSet());
+    }
+
+    public List<Long> getMemberUserIds(Long tripId) {
+        return tripMemberRepository.findAllByTripId(tripId).stream()
+                .map(TripMember::getUserId)
+                .toList();
     }
 
     private TripResponse toResponse(Trip trip) {
