@@ -68,7 +68,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/**", "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
