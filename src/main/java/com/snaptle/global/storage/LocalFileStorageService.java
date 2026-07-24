@@ -6,12 +6,21 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class LocalFileStorageService implements FileStorageService {
+
+    private static final Map<String, String> ALLOWED_IMAGE_EXTENSIONS = Map.of(
+            "image/jpeg", ".jpg",
+            "image/png", ".png",
+            "image/webp", ".webp",
+            "image/heic", ".heic",
+            "image/heif", ".heif"
+    );
 
     private final Path uploadDir;
     private final String publicBaseUrl;
@@ -32,9 +41,14 @@ public class LocalFileStorageService implements FileStorageService {
             throw new SnaptleException(ErrorCode.INVALID_FILE);
         }
 
+        String contentType = file.getContentType();
+        String extension = ALLOWED_IMAGE_EXTENSIONS.get(contentType);
+        if (extension == null) {
+            throw new SnaptleException(ErrorCode.INVALID_FILE);
+        }
+
         try {
             byte[] content = file.getBytes();
-            String extension = extractExtension(file.getOriginalFilename());
             String storedName = UUID.randomUUID() + extension;
             Path target = uploadDir.resolve(storedName);
             Files.write(target, content);
@@ -43,16 +57,9 @@ public class LocalFileStorageService implements FileStorageService {
                     ? publicBaseUrl + storedName
                     : publicBaseUrl + "/" + storedName;
 
-            return new StoredFile(url, content, file.getContentType());
+            return new StoredFile(url, content, contentType);
         } catch (IOException e) {
             throw new SnaptleException(ErrorCode.INVALID_FILE);
         }
-    }
-
-    private String extractExtension(String originalFilename) {
-        if (originalFilename == null || !originalFilename.contains(".")) {
-            return "";
-        }
-        return originalFilename.substring(originalFilename.lastIndexOf('.'));
     }
 }

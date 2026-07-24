@@ -1,6 +1,7 @@
 package com.snaptle.global.ocr;
 
 import com.snaptle.global.common.Currency;
+import com.snaptle.global.config.RestClients;
 import tools.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,7 +35,7 @@ public class GeminiReceiptOcrClient implements ReceiptOcrClient {
     public GeminiReceiptOcrClient(GeminiOcrProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.objectMapper = objectMapper;
-        this.restClient = RestClient.create(BASE_URL);
+        this.restClient = RestClients.createWithTimeout(BASE_URL);
     }
 
     @Override

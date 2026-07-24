@@ -17,7 +17,9 @@ public enum ErrorCode {
     INVALID_FILE(HttpStatus.BAD_REQUEST, "파일을 처리할 수 없습니다."),
     EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "지출 내역을 찾을 수 없습니다."),
     PAYER_NOT_TRIP_MEMBER(HttpStatus.BAD_REQUEST, "결제자는 여행 멤버여야 합니다."),
-    EXCHANGE_RATE_UNAVAILABLE(HttpStatus.BAD_REQUEST, "환율 자동 조회에 실패했습니다. 환율을 직접 입력해주세요.");
+    EXCHANGE_RATE_UNAVAILABLE(HttpStatus.BAD_REQUEST, "환율 자동 조회에 실패했습니다. 환율을 직접 입력해주세요."),
+    INVALID_EXCHANGE_RATE(HttpStatus.BAD_REQUEST, "환율 값이 올바르지 않습니다."),
+    INVALID_RECEIPT_IMAGE_URL(HttpStatus.BAD_REQUEST, "영수증 이미지 URL은 서비스에 업로드된 이미지만 사용할 수 있습니다.");
 
     private final HttpStatus status;
     private final String message;

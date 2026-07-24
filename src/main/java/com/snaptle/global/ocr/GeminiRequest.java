@@ -21,6 +21,7 @@ record GeminiRequest(List<Content> contents, GenerationConfig generationConfig) 
         }
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     record InlineData(String mimeType, String data) {
     }
 

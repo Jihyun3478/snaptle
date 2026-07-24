@@ -1,6 +1,7 @@
 package com.snaptle.global.exchangerate;
 
 import com.snaptle.global.common.Currency;
+import com.snaptle.global.config.RestClients;
 import java.math.BigDecimal;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ public class ExchangeRateApiClient implements ExchangeRateClient {
 
     public ExchangeRateApiClient(ExchangeRateProperties properties) {
         this.properties = properties;
-        this.restClient = RestClient.create(BASE_URL);
+        this.restClient = RestClients.createWithTimeout(BASE_URL);
     }
 
     @Override

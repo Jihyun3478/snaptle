@@ -11,6 +11,7 @@ import com.snaptle.global.exception.SnaptleException;
 import com.snaptle.global.exchangerate.ExchangeRateClient;
 import com.snaptle.global.ocr.ReceiptOcrClient;
 import com.snaptle.global.ocr.ReceiptOcrResult;
+import com.snaptle.global.storage.FileStorageProperties;
 import com.snaptle.global.storage.FileStorageService;
 import com.snaptle.global.storage.StoredFile;
 import java.math.BigDecimal;
@@ -25,20 +26,24 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional(readOnly = true)
 public class ExpenseService {
 
+    private static final BigDecimal MAX_MANUAL_EXCHANGE_RATE = BigDecimal.valueOf(100_000);
+
     private final ExpenseRepository expenseRepository;
     private final TripService tripService;
     private final FileStorageService fileStorageService;
     private final ReceiptOcrClient receiptOcrClient;
     private final ExchangeRateClient exchangeRateClient;
+    private final FileStorageProperties fileStorageProperties;
 
     public ExpenseService(ExpenseRepository expenseRepository, TripService tripService,
                            FileStorageService fileStorageService, ReceiptOcrClient receiptOcrClient,
-                           ExchangeRateClient exchangeRateClient) {
+                           ExchangeRateClient exchangeRateClient, FileStorageProperties fileStorageProperties) {
         this.expenseRepository = expenseRepository;
         this.tripService = tripService;
         this.fileStorageService = fileStorageService;
         this.receiptOcrClient = receiptOcrClient;
         this.exchangeRateClient = exchangeRateClient;
+        this.fileStorageProperties = fileStorageProperties;
     }
 
     public OcrRecognizeResponse recognizeReceipt(Long userId, Long tripId, MultipartFile file) {
@@ -60,6 +65,7 @@ public class ExpenseService {
         if (!tripService.isMember(tripId, request.payerId())) {
             throw new SnaptleException(ErrorCode.PAYER_NOT_TRIP_MEMBER);
         }
+        validateReceiptImageUrl(request.receiptImageUrl());
 
         BigDecimal exchangeRate = resolveExchangeRate(request.currency(), trip.getBaseCurrency(),
                 request.manualExchangeRate());
@@ -88,9 +94,27 @@ public class ExpenseService {
             return BigDecimal.ONE;
         }
 
-        return exchangeRateClient.getRate(from, to)
-                .or(() -> Optional.ofNullable(manualExchangeRate)
-                        .filter(rate -> rate.compareTo(BigDecimal.ZERO) > 0))
-                .orElseThrow(() -> new SnaptleException(ErrorCode.EXCHANGE_RATE_UNAVAILABLE));
+        Optional<BigDecimal> rate = exchangeRateClient.getRate(from, to);
+        if (rate.isPresent()) {
+            return rate.get();
+        }
+
+        if (manualExchangeRate == null) {
+            throw new SnaptleException(ErrorCode.EXCHANGE_RATE_UNAVAILABLE);
+        }
+        if (manualExchangeRate.compareTo(BigDecimal.ZERO) <= 0
+                || manualExchangeRate.compareTo(MAX_MANUAL_EXCHANGE_RATE) > 0) {
+            throw new SnaptleException(ErrorCode.INVALID_EXCHANGE_RATE);
+        }
+        return manualExchangeRate;
+    }
+
+    private void validateReceiptImageUrl(String receiptImageUrl) {
+        if (receiptImageUrl == null) {
+            return;
+        }
+        if (!receiptImageUrl.startsWith(fileStorageProperties.publicBaseUrl())) {
+            throw new SnaptleException(ErrorCode.INVALID_RECEIPT_IMAGE_URL);
+        }
     }
 }
