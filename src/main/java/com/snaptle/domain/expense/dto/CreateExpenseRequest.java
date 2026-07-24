@@ -2,11 +2,14 @@ package com.snaptle.domain.expense.dto;
 
 import com.snaptle.domain.expense.ExpenseCategory;
 import com.snaptle.global.common.Currency;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record CreateExpenseRequest(
         @NotNull Long payerId,
@@ -16,6 +19,7 @@ public record CreateExpenseRequest(
         @NotNull LocalDateTime paidAt,
         @NotNull ExpenseCategory category,
         String receiptImageUrl,
-        BigDecimal manualExchangeRate
+        BigDecimal manualExchangeRate,
+        @NotEmpty @Valid List<ParticipantShareRequest> participants
 ) {
 }

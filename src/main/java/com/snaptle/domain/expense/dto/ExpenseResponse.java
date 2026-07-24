@@ -2,9 +2,11 @@ package com.snaptle.domain.expense.dto;
 
 import com.snaptle.domain.expense.Expense;
 import com.snaptle.domain.expense.ExpenseCategory;
+import com.snaptle.domain.expense.ExpenseParticipant;
 import com.snaptle.global.common.Currency;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ExpenseResponse(
         Long id,
@@ -17,10 +19,11 @@ public record ExpenseResponse(
         BigDecimal exchangeRate,
         BigDecimal convertedAmount,
         String receiptImageUrl,
-        ExpenseCategory category
+        ExpenseCategory category,
+        List<ExpenseParticipantResponse> participants
 ) {
 
-    public static ExpenseResponse from(Expense expense) {
+    public static ExpenseResponse of(Expense expense, List<ExpenseParticipant> participants) {
         return new ExpenseResponse(
                 expense.getId(),
                 expense.getTripId(),
@@ -32,7 +35,8 @@ public record ExpenseResponse(
                 expense.getExchangeRate(),
                 expense.getConvertedAmount(),
                 expense.getReceiptImageUrl(),
-                expense.getCategory()
+                expense.getCategory(),
+                participants.stream().map(ExpenseParticipantResponse::from).toList()
         );
     }
 }
