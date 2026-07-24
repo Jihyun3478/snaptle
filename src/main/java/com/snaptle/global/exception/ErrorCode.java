@@ -19,7 +19,13 @@ public enum ErrorCode {
     PAYER_NOT_TRIP_MEMBER(HttpStatus.BAD_REQUEST, "결제자는 여행 멤버여야 합니다."),
     EXCHANGE_RATE_UNAVAILABLE(HttpStatus.BAD_REQUEST, "환율 자동 조회에 실패했습니다. 환율을 직접 입력해주세요."),
     INVALID_EXCHANGE_RATE(HttpStatus.BAD_REQUEST, "환율 값이 올바르지 않습니다."),
-    INVALID_RECEIPT_IMAGE_URL(HttpStatus.BAD_REQUEST, "영수증 이미지 URL은 서비스에 업로드된 이미지만 사용할 수 있습니다.");
+    INVALID_RECEIPT_IMAGE_URL(HttpStatus.BAD_REQUEST, "영수증 이미지 URL은 서비스에 업로드된 이미지만 사용할 수 있습니다."),
+    EMPTY_PARTICIPANTS(HttpStatus.BAD_REQUEST, "지출을 분담할 참여자를 1명 이상 선택해야 합니다."),
+    DUPLICATE_PARTICIPANT(HttpStatus.BAD_REQUEST, "참여자가 중복되었습니다."),
+    PARTICIPANT_NOT_TRIP_MEMBER(HttpStatus.BAD_REQUEST, "참여자는 여행 멤버여야 합니다."),
+    INVALID_PARTICIPANT_SPLIT(HttpStatus.BAD_REQUEST, "분담 금액은 모두 입력하거나 모두 비워야 하며, 합계가 지출 금액과 일치해야 합니다."),
+    SAME_CREDITOR_AND_DEBTOR(HttpStatus.BAD_REQUEST, "채권자와 채무자는 같을 수 없습니다."),
+    PERSONAL_DEBT_NOT_FOUND(HttpStatus.NOT_FOUND, "개인 간 채무 내역을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;
