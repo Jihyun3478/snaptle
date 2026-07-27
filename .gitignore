@@ -1,9 +1,23 @@
+### Env ###
+.env
+.env.local
+.env.*.local
+.DS_Store
+
+### Backend (Java/Gradle) ###
 HELP.md
-.gradle
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+uploads/
+
+### Frontend (Node) ###
+node_modules/
+dist/
+dist-ssr/
+*.local
 
 ### STS ###
 .apt_generated
@@ -18,7 +32,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -26,19 +40,13 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+### VS Code ###
+.vscode/
+!.vscode/extensions.json
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### Env ###
-.env
-.DS_Store
-
-### Uploads ###
-/uploads/
